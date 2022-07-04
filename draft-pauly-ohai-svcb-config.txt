@@ -5,8 +5,8 @@
 Oblivious HTTP Application Intermediation                       T. Pauly
 Internet-Draft                                                Apple Inc.
 Intended status: Informational                                  T. Reddy
-Expires: 26 November 2022                                         Akamai
-                                                             25 May 2022
+Expires: 5 January 2023                                           Akamai
+                                                             4 July 2022
 
 
       Discovery of Oblivious Services via Service Binding Records
@@ -31,6 +31,9 @@ About This Document
    (mailto:ohai@ietf.org), which is archived at
    https://mailarchive.ietf.org/arch/browse/ohai/.
 
+   Source for this draft and an issue tracker can be found at
+   https://github.com/tfpauly/draft-ohai-svcb-config.
+
 Status of This Memo
 
    This Internet-Draft is submitted in full conformance with the
@@ -46,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 26 November 2022.
+   This Internet-Draft will expire on 5 January 2023.
 
 Copyright Notice
 
@@ -124,7 +127,7 @@ Table of Contents
 
 3.  The oblivious SvcParamKey
 
-   The "oblivious" SvcParamKey Section 6 is used to indicate that a
+   The "oblivious" SvcParamKey (Section 6) is used to indicate that a
    service described in an SVCB record can act as an oblivious target.
    Clients can issue requests to this service through an oblivious proxy
    once they learn the key configuration to use to encrypt messages to
@@ -135,14 +138,14 @@ Table of Contents
 
    The "oblivious" parameter can be included in the mandatory parameter
    list to ensure that clients that do not support oblivious access do
-   not try to use the service.  Services that include mark oblivious
-   support as mandatory can, therefore, indicate that the service might
-   not be accessible in a non-oblivious fashion.  Services that are
-   intended to be accessed either as an oblivious target or directly
-   SHOULD NOT mark the "oblivious" parameter as mandatory.  Note that
-   since multiple SVCB responses can be provided for a single query, the
-   oblivious and non-oblivious versions of a single service can have
-   different SVCB records to support different names or properties.
+   not try to use the service.  Services that mark oblivious support as
+   mandatory can, therefore, indicate that the service might not be
+   accessible in a non-oblivious fashion.  Services that are intended to
+   be accessed either as an oblivious target or directly SHOULD NOT mark
+   the "oblivious" parameter as mandatory.  Note that since multiple
+   SVCB responses can be provided for a single query, the oblivious and
+   non-oblivious versions of a single service can have different SVCB
+   records to support different names or properties.
 
    The scheme to use for oblivious requests made to a service depends on
    the scheme of the SVCB record.  This document defines the
@@ -284,10 +287,10 @@ Table of Contents
    targeted key configurations per-client MUST NOT be used.
 
    When clients fetch a target's configuration using the well-known URI,
-   they can expose their identity in the form of an IP addres if they do
-   not connect via a proxy or some other IP-hiding mechanism.  Clients
-   SHOULD use a proxy or similar mechanism to avoid exposing client IPs
-   to a target.
+   they can expose their identity in the form of an IP address if they
+   do not connect via a proxy or some other IP-hiding mechanism.
+   Clients SHOULD use a proxy or similar mechanism to avoid exposing
+   client IPs to a target.
 
 6.  IANA Considerations
 
@@ -327,27 +330,27 @@ Table of Contents
    [BINARY-HTTP]
               Thomson, M. and C. A. Wood, "Binary Representation of HTTP
               Messages", Work in Progress, Internet-Draft, draft-ietf-
-              httpbis-binary-message-04, 23 May 2022,
+              httpbis-binary-message-05, 9 June 2022,
               <https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-
-              binary-message-04>.
+              binary-message-05>.
 
    [DDR]      Pauly, T., Kinnear, E., Wood, C. A., McManus, P., and T.
               Jensen, "Discovery of Designated Resolvers", Work in
-              Progress, Internet-Draft, draft-ietf-add-ddr-06, 4 April
+              Progress, Internet-Draft, draft-ietf-add-ddr-07, 24 June
               2022, <https://datatracker.ietf.org/doc/html/draft-ietf-
-              add-ddr-06>.
+              add-ddr-07>.
 
    [DNR]      Boucadair, M., Reddy, T., Wing, D., Cook, N., and T.
               Jensen, "DHCP and Router Advertisement Options for the
               Discovery of Network-designated Resolvers (DNR)", Work in
-              Progress, Internet-Draft, draft-ietf-add-dnr-07, 13 April
+              Progress, Internet-Draft, draft-ietf-add-dnr-09, 24 June
               2022, <https://datatracker.ietf.org/doc/html/draft-ietf-
-              add-dnr-07>.
+              add-dnr-09>.
 
    [DNS-SVCB] Schwartz, B., "Service Binding Mapping for DNS Servers",
               Work in Progress, Internet-Draft, draft-ietf-add-svcb-dns-
-              03, 22 April 2022, <https://datatracker.ietf.org/doc/html/
-              draft-ietf-add-svcb-dns-03>.
+              05, 24 June 2022, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-add-svcb-dns-05>.
 
    [DOH]      Hoffman, P. and P. McManus, "DNS Queries over HTTPS
               (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
@@ -395,8 +398,8 @@ Table of Contents
    [I-D.ietf-add-svcb-dns]
               Schwartz, B., "Service Binding Mapping for DNS Servers",
               Work in Progress, Internet-Draft, draft-ietf-add-svcb-dns-
-              03, 22 April 2022, <https://datatracker.ietf.org/doc/html/
-              draft-ietf-add-svcb-dns-03>.
+              05, 24 June 2022, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-add-svcb-dns-05>.
 
 Authors' Addresses
 
