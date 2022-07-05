@@ -5,8 +5,8 @@
 Oblivious HTTP Application Intermediation                       T. Pauly
 Internet-Draft                                                Apple Inc.
 Intended status: Informational                                  T. Reddy
-Expires: 5 January 2023                                           Akamai
-                                                             4 July 2022
+Expires: 6 January 2023                                           Akamai
+                                                             5 July 2022
 
 
       Discovery of Oblivious Services via Service Binding Records
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 5 January 2023.
+   This Internet-Draft will expire on 6 January 2023.
 
 Copyright Notice
 
@@ -291,8 +291,15 @@ Table of Contents
    When clients fetch a gateway's configuration using the well-known
    URI, they can expose their identity in the form of an IP address if
    they do not connect via a proxy or some other IP-hiding mechanism.
-   Clients SHOULD use a proxy or similar mechanism to avoid exposing
-   client IPs to a gateway.
+   In some circumstances, this might not be a privacy concern, since
+   revealing that a particular client IP address is preparing to use an
+   Oblivious HTTP service can be expected.  However, if a client is
+   otherwise trying to obfuscate its IP address or location (and not
+   merely decouple its specific requests from its IP address), or
+   revealing its IP address will increase the risk of a key targeting
+   attack (if a gateway service is trying to differentiate traffic
+   across client IP addresses), a proxy or similar mechanism can be used
+   to fetch the gateway's configuration.
 
 6.  IANA Considerations
 
@@ -338,9 +345,9 @@ Table of Contents
 
    [DDR]      Pauly, T., Kinnear, E., Wood, C. A., McManus, P., and T.
               Jensen, "Discovery of Designated Resolvers", Work in
-              Progress, Internet-Draft, draft-ietf-add-ddr-07, 24 June
+              Progress, Internet-Draft, draft-ietf-add-ddr-08, 5 July
               2022, <https://datatracker.ietf.org/doc/html/draft-ietf-
-              add-ddr-07>.
+              add-ddr-08>.
 
    [DNR]      Boucadair, M., Reddy, T., Wing, D., Cook, N., and T.
               Jensen, "DHCP and Router Advertisement Options for the
@@ -351,8 +358,8 @@ Table of Contents
 
    [DNS-SVCB] Schwartz, B., "Service Binding Mapping for DNS Servers",
               Work in Progress, Internet-Draft, draft-ietf-add-svcb-dns-
-              05, 24 June 2022, <https://datatracker.ietf.org/doc/html/
-              draft-ietf-add-svcb-dns-05>.
+              06, 5 July 2022, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-add-svcb-dns-06>.
 
    [DOH]      Hoffman, P. and P. McManus, "DNS Queries over HTTPS
               (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
@@ -400,8 +407,8 @@ Table of Contents
    [I-D.ietf-add-svcb-dns]
               Schwartz, B., "Service Binding Mapping for DNS Servers",
               Work in Progress, Internet-Draft, draft-ietf-add-svcb-dns-
-              05, 24 June 2022, <https://datatracker.ietf.org/doc/html/
-              draft-ietf-add-svcb-dns-05>.
+              06, 5 July 2022, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-add-svcb-dns-06>.
 
 Authors' Addresses
 
