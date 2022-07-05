@@ -18,9 +18,8 @@ Abstract
    HTTPS DNS resource records to denote that a service is accessible
    using Oblivious HTTP, with an indication of which Oblivious Gateway
    Resource to use to access the service (as an Oblivious Target
-   Resource).  This document also defines mechanisms to learn more
-   details about the related Oblivious Gateway Resource, such as its key
-   configuration.
+   Resource).  This document also defines a mechanism to learn the key
+   configuration of the related Oblivious Gateway Resource.
 
 About This Document
 
@@ -77,17 +76,13 @@ Table of Contents
      3.2.  Use in DNS server SVCB records
        3.2.1.  Use with DDR
        3.2.2.  Use with DNR
-   4.  Key Configuration Well-Known URI
-   5.  Oblivious Gateway Resource Well-Known URI
-   6.  Security and Privacy Considerations
-   7.  IANA Considerations
-     7.1.  SVCB Service Parameter
-     7.2.  Well-Known URIs
-       7.2.1.  oblivious-configs
-       7.2.2.  oblivious-gateway
-   8.  References
-     8.1.  Normative References
-     8.2.  Informative References
+   4.  Key Configuration Fetching
+   5.  Security and Privacy Considerations
+   6.  IANA Considerations
+     6.1.  SVCB Service Parameter
+   7.  References
+     7.1.  Normative References
+     7.2.  Informative References
    Authors' Addresses
 
 1.  Introduction
@@ -119,16 +114,8 @@ Table of Contents
    target, and indicates an oblivious gateway that can provide access to
    the target.
 
-   This document also defines two well-known URIs [RFC8615], which are
-   accessed on the oblivious gateway indicated in the SVCB record.
-
-   *  "oblivious-configs", which can be used to look up key
-      configurations on a host that has been identified as an oblivious
-      gateway using SVCB records (Section 4); and,
-
-   *  "oblivious-gateway", which can be used to send oblivious gateway
-      requests to a host that has been identified as an oblivious
-      gateway using SVCB records (Section 5).
+   This document also defines a way to fetch an oblivious gateway's key
+   configuration by sending a request to the gateway (Section 4).
 
    This mechanism does not aid in the discovery of oblivious relays;
    relay configuration is out of scope for this document.
@@ -143,7 +130,7 @@ Table of Contents
 
 3.  The oblivious-gateway SvcParamKey
 
-   The "oblivious-gateway" SvcParamKey (Section 7) is used to indicate
+   The "oblivious-gateway" SvcParamKey (Section 6) is used to indicate
    that a service described in an SVCB record can be accessed as an
    oblivious target using the specified gateway.  The service that is
    queried by the client hosts one or more target resources.  The
@@ -157,11 +144,15 @@ Table of Contents
    the method described in Section 4).
 
    The presentation format of the "oblivious-gateway" parameter is a
-   comma-separated list of one or more hostnames.  The wire format
-   consists of one or more hostnames, each prefixed by its length as a
-   single octet, with these length-value pairs concatenated to form the
-   SvcParamValue.  These pairs MUST exactly fill the SvcParamValue;
-   otherwise, the SvcParamValue is malformed.
+   comma-separated list of one or more gateway URIs.  URIs MUST be
+   encoded as escaped items if they include "," or "", replacing these
+   with "\," and "\", respectively.
+
+   The wire format consists of one or more URIs encoded in UTF-8
+   [RFC3629], each prefixed by its length as a single octet, with these
+   length-value pairs concatenated to form the SvcParamValue.  These
+   pairs MUST exactly fill the SvcParamValue; otherwise, the
+   SvcParamValue is malformed.
 
    The "oblivious-gateway" parameter can be included in the mandatory
    parameter list to ensure that clients that do not support oblivious
@@ -192,13 +183,14 @@ Table of Contents
    supports an oblivious gateway could look like this:
 
    svc.example.com. 7200  IN HTTPS 1 . (
-        alpn=h2 oblivious-gateway=osvc.example.com )
+        alpn=h2 oblivious-gateway=https://osvc.example.com/gateway )
 
    A similar record for a service that only support oblivious
    connectivity could look like this:
 
    svc.example.com. 7200  IN HTTPS 1 . (
-       mandatory=oblivious-gateway oblivious-gateway=osvc.example.com )
+       mandatory=oblivious-gateway
+       oblivious-gateway=https://osvc.example.com/gateway )
 
 3.2.  Use in DNS server SVCB records
 
@@ -227,18 +219,18 @@ Table of Contents
 
    _dns.resolver.arpa  7200  IN SVCB 1 doh.example.net (
         alpn=h2 dohpath=/dns-query{?dns}
-        oblivious-gateway=odoh.example.net  )
+        oblivious-gateway=https://odoh.example.net/gateway  )
 
    Clients still need to perform some verification of oblivious DNS
    servers, such as the TLS certificate check described in [DDR].  This
    certificate check can be done when looking up the configuration on
-   the resolver using the well-known URI (Section 4), which can either
-   be done directly, or via a proxy to avoid exposing client IP
-   addresses.
+   the gateway as described in Section 4, which can either be done
+   directly, or via the relay or another proxy to avoid exposing client
+   IP addresses.
 
    Clients also need to ensure that they are not being targeted with
    unique key configurations that would reveal their identity.  See
-   Section 6 for more discussion.
+   Section 5 for more discussion.
 
 3.2.2.  Use with DNR
 
@@ -250,79 +242,44 @@ Table of Contents
    While DNR does not require the same kind of verification as DDR,
    clients still need to ensure that they are not being targeted with
    unique key configurations that would reveal their identity.  See
-   Section 6 for more discussion.
+   Section 5 for more discussion.
 
-4.  Key Configuration Well-Known URI
+4.  Key Configuration Fetching
 
    Clients that know a service is available as an oblivious target via
    discovery through the "oblivious-gateway" parameter in a SVCB or
    HTTPS record need to know the key configuration of the gateway before
    sending oblivious requests.
 
-   This document defines a well-known URI [RFC8615], "oblivious-
-   configs", that allows a gateway to host its configurations.
+   In order to fetch the key configuration of an oblivious gateway
+   discovered in this manner, the client issues a GET request to the URI
+   of the gateway specifying the "application/ohttp-keys" ([OHTTP])
+   media type in the Accept header.
 
-   The URI is constructed using the name in the "oblivious-gateway" SVCB
-   parameter.
-
-   For example, the configuration URI for the following record:
-
-   svc.example.com. 7200  IN HTTPS 1 . (
-        alpn=h2 oblivious-gateway=osvc.example.com )
-
-   would be "https://osvc.example.com/.well-known/oblivious-configs".
-
-   As another example, the configuration URI for the following record:
-
-   _dns.resolver.arpa  7200  IN SVCB 1 doh.example.net (
-        alpn=h2 dohpath=/dns-query{?dns}
-        oblivious-gateway=odoh.example.net )
-
-   would be "https://odoh.example.net/.well-known/oblivious-configs".
-
-   The content of this resource is expected to be "application/ohttp-
-   keys", as defined in [OHTTP].
-
-   Before being able send messages through an oblivious gateway, clients
-   need to use this URI to fetch the configuration.  They can either
-   fetch it directly, or do so via a proxy in order to avoid the server
-   discovering information about the client's identity.  See Section 6
-   for more discussion of avoiding key targeting attacks.
-
-5.  Oblivious Gateway Resource Well-Known URI
-
-   Oblivious gateways that are advertised via SVCB or HTTPS records need
-   to receive gateway requests (sent from oblivious relays) on a
-   particular path.  While oblivious gateways in general do not require
-   fixed or well-known paths, since they can use ad-hoc configurations
-   with clients and relays, gateways discovered using the method
-   described in this document need to offer a well-known path.
-
-   Offering a single, well-known URI for each discovered gateway name
-   allows for simpler lookup of associated key configurations, simpler
-   communication between clients and relays, and makes client-targeting
-   attacks more difficult to execute.  See Section 6 for more
-   discussion.
-
-   This document defines a well-known URI [RFC8615], "oblivious-
-   gateway", which an oblivious gateway uses to receive gateway
-   requests.
-
-   The URI is constructed using the name in the "oblivious-gateway" SVCB
-   parameter.
-
-   For example, the oblivious request URI for the following record:
+   For example, if the client receives the following record:
 
    svc.example.com. 7200  IN HTTPS 1 . (
-        alpn=h2 oblivious-gateway=osvc.example.com )
+        alpn=h2 oblivious-gateway=https://osvc.example.com/gateway )
 
-   would be "https://osvc.example.com/.well-known/oblivious-gateway".
+   It could fetch the key configuration with the following request:
 
-   Requests to this resource are expected to use the content type
-   "message/ohttp-req", and responses are expected to use "message/
-   ohttp-res", as defined in [OHTTP].
+   GET /gateway HTTP/1.1
+   Host: osvc.example.com
+   Accept: application/ohttp-keys
 
-6.  Security and Privacy Considerations
+   Oblivious gateways that coordinate with targets that advertise
+   oblivious support SHOULD support GET requests for their key
+   configuration in this manner, unless there is another out-of-band
+   configuration model that is usable by clients.  Gateways respond with
+   their key configuration in the response body, with a content type of
+   "application/ohttp-keys".
+
+   Clients can either fetch this key configuration directly, or do so
+   via a proxy in order to avoid the server discovering information
+   about the client's identity.  See Section 5 for more discussion of
+   avoiding key targeting attacks.
+
+5.  Security and Privacy Considerations
 
    Attackers on a network can remove SVCB information from cleartext DNS
    answers that are not protected by DNSSEC [DNSSEC].  This can
@@ -351,27 +308,22 @@ Table of Contents
    targeting attack.  Oblivious gateways that are detected to use
    targeted key configurations per-client MUST NOT be used.
 
-   Oblivious gateways that are accessed based on SVCB discovery are
-   required to offer a well-known oblivious gateway request path.  This
-   is done in part to make client-targeting attacks more difficult.  If
-   the gateway request path is communicated in the SVCB parameters,
-   individual clients could receive unique paths which could be used to
-   identify them upon making requests via a relay.  While it is still
-   possible for different clients to receive different gateway names,
-   this requires provisioning more gateway names (which has overhead in
-   DNS configuration and TLS certificate generation), and allows relays
-   to more easily enforce allow-lists of known gateway names without
-   needing to also check request paths.
+   When clients fetch a gateway's configuration (Section 4), they can
+   expose their identity in the form of an IP address if they do not
+   connect via a proxy or some other IP-hiding mechanism.  In some
+   circumstances, this might not be a privacy concern, since revealing
+   that a particular client IP address is preparing to use an Oblivious
+   HTTP service can be expected.  However, if a client is otherwise
+   trying to obfuscate its IP address or location (and not merely
+   decouple its specific requests from its IP address), or revealing its
+   IP address will increase the risk of a key targeting attack (if a
+   gateway service is trying to differentiate traffic across client IP
+   addresses), a proxy or similar mechanism can be used to fetch the
+   gateway's configuration.
 
-   When clients fetch a gateway's configuration using the well-known
-   URI, they can expose their identity in the form of an IP address if
-   they do not connect via a proxy or some other IP-hiding mechanism.
-   Clients SHOULD use a proxy or similar mechanism to avoid exposing
-   client IPs to a gateway.
+6.  IANA Considerations
 
-7.  IANA Considerations
-
-7.1.  SVCB Service Parameter
+6.1.  SVCB Service Parameter
 
    IANA is requested to add the following entry to the SVCB Service
    Parameters registry ([SVCB]).
@@ -386,38 +338,9 @@ Table of Contents
 
                                   Table 1
 
-7.2.  Well-Known URIs
+7.  References
 
-   IANA is requested to add two new entries in the "Well-Known URIs"
-   registry [RFC8615].
-
-7.2.1.  oblivious-configs
-
-   URI suffix: oblivious-configs
-
-   Change controller: IETF
-
-   Specification document: This document
-
-   Status: permanent
-
-   Related information: N/A
-
-7.2.2.  oblivious-gateway
-
-   URI suffix: oblivious-gateway
-
-   Change controller: IETF
-
-   Specification document: This document
-
-   Status: permanent
-
-   Related information: N/A
-
-8.  References
-
-8.1.  Normative References
+7.1.  Normative References
 
    [BINARY-HTTP]
               Thomson, M. and C. A. Wood, "Binary Representation of HTTP
@@ -458,13 +381,13 @@ Table of Contents
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/rfc/rfc2119>.
 
+   [RFC3629]  Yergeau, F., "UTF-8, a transformation format of ISO
+              10646", STD 63, RFC 3629, DOI 10.17487/RFC3629, November
+              2003, <https://www.rfc-editor.org/rfc/rfc3629>.
+
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
-
-   [RFC8615]  Nottingham, M., "Well-Known Uniform Resource Identifiers
-              (URIs)", RFC 8615, DOI 10.17487/RFC8615, May 2019,
-              <https://www.rfc-editor.org/rfc/rfc8615>.
 
    [SVCB]     Schwartz, B., Bishop, M., and E. Nygren, "Service binding
               and parameter specification via the DNS (DNS SVCB and
@@ -473,7 +396,7 @@ Table of Contents
               <https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-
               svcb-https-10>.
 
-8.2.  Informative References
+7.2.  Informative References
 
    [CONSISTENCY]
               Davidson, A., Finkel, M., Thomson, M., and C. A. Wood,
