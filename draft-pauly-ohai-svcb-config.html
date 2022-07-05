@@ -9,9 +9,10 @@
 <meta content="Tirumaleswar Reddy" name="author">
 <meta content="
        This document defines a parameter that can be included in SVCB and HTTPS
-DNS resource records to denote that a service is accessible as an Oblivious
-Gateway Resource, as well as a mechanism to look up oblivious key configurations
-using a well-known URI. 
+DNS resource records to denote that a service is accessible using Oblivious
+HTTP, with an indication of which Oblivious Gateway Resource to use to access
+the service (as an Oblivious Target Resource). This document also defines
+a mechanism to learn the key configuration of the related Oblivious Gateway Resource. 
     " name="description">
 <meta content="xml2rfc 3.13.0" name="generator">
 <meta content="Internet-Draft" name="keyword">
@@ -1070,9 +1071,10 @@ svg :is([stroke="fill"], [fill^="#fff"]) {
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
 <p id="section-abstract-1">This document defines a parameter that can be included in SVCB and HTTPS
-DNS resource records to denote that a service is accessible as an Oblivious
-Gateway Resource, as well as a mechanism to look up oblivious key configurations
-using a well-known URI.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+DNS resource records to denote that a service is accessible using Oblivious
+HTTP, with an indication of which Oblivious Gateway Resource to use to access
+the service (as an Oblivious Target Resource). This document also defines
+a mechanism to learn the key configuration of the related Oblivious Gateway Resource.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-about-this-document">
@@ -1143,7 +1145,7 @@ using a well-known URI.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
             <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="xref">2</a>.  <a href="#name-conventions-and-definitions" class="xref">Conventions and Definitions</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
-            <p id="section-toc.1-1.3.1"><a href="#section-3" class="xref">3</a>.  <a href="#name-the-oblivious-svcparamkey" class="xref">The oblivious SvcParamKey</a></p>
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="xref">3</a>.  <a href="#name-the-oblivious-gateway-svcpa" class="xref">The oblivious-gateway SvcParamKey</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
                 <p id="section-toc.1-1.3.2.1.1" class="keepWithNext"><a href="#section-3.1" class="xref">3.1</a>.  <a href="#name-use-in-https-service-record" class="xref">Use in HTTPS service records</a></p>
@@ -1162,7 +1164,7 @@ using a well-known URI.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
-            <p id="section-toc.1-1.4.1"><a href="#section-4" class="xref">4</a>.  <a href="#name-configuration-well-known-ur" class="xref">Configuration Well-Known URI</a></p>
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="xref">4</a>.  <a href="#name-key-configuration-fetching" class="xref">Key Configuration Fetching</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
             <p id="section-toc.1-1.5.1"><a href="#section-5" class="xref">5</a>.  <a href="#name-security-and-privacy-consid" class="xref">Security and Privacy Considerations</a></p>
@@ -1172,9 +1174,6 @@ using a well-known URI.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
                 <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="xref">6.1</a>.  <a href="#name-svcb-service-parameter" class="xref">SVCB Service Parameter</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
-                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="xref">6.2</a>.  <a href="#name-well-known-uri" class="xref">Well-Known URI</a></p>
 </li>
             </ul>
 </li>
@@ -1202,30 +1201,30 @@ using a well-known URI.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
 <p id="section-1-1">Oblivious HTTP <span>[<a href="#OHTTP" class="xref">OHTTP</a>]</span> allows clients to encrypt
-messages exchanged with an HTTP target server accessed via an Oblivious Relay
-Resource (relay) and an Oblivious Gateway Resource (gateway), in such a way
-that the relay cannot inspect the contents of the message and the gateway
-does not discover the client's identity. In order to use Oblivious HTTP, clients
-need to possess a key configuration to use to encrypt messages to the gateway.<a href="#section-1-1" class="pilcrow">¶</a></p>
+messages exchanged with an Oblivious Target Resource (target). The messages
+are encapsulated in encrypted messages to an Oblivious Gateway Resource
+(gateway), which gates access to the target. The gateway is access via an
+Oblivious Relay Resource (relay), which proxies the encapsulated messages
+to hide the identity of the client. Overall, this architecture is designed
+in such a way that the relay cannot inspect the contents of messages, and
+the gateway and target cannot discover the client's identity.<a href="#section-1-1" class="pilcrow">¶</a></p>
 <p id="section-1-2">Since Oblivious HTTP deployments will often involve very specific coordination
 between clients, relays, and gateways, the key configuration can often be
 shared in a bespoke fashion. However, some deployments involve clients
-discovering oblivious gateways more dynamically. For example, a network may
-want to advertise a DNS resolver that is accessible over Oblivious HTTP
-and applies local network resolution policies via mechanisms like Discovery
-of Designated Resolvers (<span>[<a href="#DDR" class="xref">DDR</a>]</span>. Clients
+discovering oblivious targets and their assoicated gateways more dynamically.
+For example, a network may want to advertise a DNS resolver that is accessible
+over Oblivious HTTP and applies local network resolution policies via mechanisms
+like Discovery of Designated Resolvers (<span>[<a href="#DDR" class="xref">DDR</a>]</span>. Clients
 can work with trusted relays to access these gateways.<a href="#section-1-2" class="pilcrow">¶</a></p>
 <p id="section-1-3">This document defines a mechanism to advertise that an HTTP service supports
 Oblivious HTTP using DNS records, as a parameter that can be included in SVCB
 and HTTPS DNS resource records <span>[<a href="#SVCB" class="xref">SVCB</a>]</span>.
 The presence of this parameter indicates that a service can act as an oblivious
-gateway; see <span><a href="https://datatracker.ietf.org/doc/html/draft-ietf-ohai-ohttp-01#section-2" class="relref">Section 2</a> of [<a href="#OHTTP" class="xref">OHTTP</a>]</span> for a description of oblivious gateway.<a href="#section-1-3" class="pilcrow">¶</a></p>
-<p id="section-1-4">This document also defines a well-known URI <span>[<a href="#RFC8615" class="xref">RFC8615</a>]</span>, "oblivious-configs",
-that can be used to look up key configurations on a service that is known
-act as an oblivious gateway.<a href="#section-1-4" class="pilcrow">¶</a></p>
-<p id="section-1-5">This mechanism does not aid in the discovery of relays to use to access
-oblivious gateways; the configuration of proxies is out of scope for this
-document.<a href="#section-1-5" class="pilcrow">¶</a></p>
+target, and indicates an oblivious gateway that can provide access to the target.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">This document also defines a way to fetch an oblivious gateway's key configuration
+by sending a request to the gateway (<a href="#config-fetch" class="xref">Section 4</a>).<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">This mechanism does not aid in the discovery of oblivious relays;
+relay configuration is out of scope for this document.<a href="#section-1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="conventions-and-definitions">
@@ -1239,40 +1238,51 @@ described in BCP 14 <span>[<a href="#RFC2119" class="xref">RFC2119</a>]</span> 
 appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="the-oblivious-svcparamkey">
+<div id="the-oblivious-gateway-svcparamkey">
 <section id="section-3">
-      <h2 id="name-the-oblivious-svcparamkey">
-<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-the-oblivious-svcparamkey" class="section-name selfRef">The oblivious SvcParamKey</a>
+      <h2 id="name-the-oblivious-gateway-svcpa">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-the-oblivious-gateway-svcpa" class="section-name selfRef">The oblivious-gateway SvcParamKey</a>
       </h2>
-<p id="section-3-1">The "oblivious" SvcParamKey (<a href="#iana" class="xref">Section 6</a>) is used to indicate that a service
-described in an SVCB record can act as an oblivious gateway resource. Clients
-can issue requests to this service through an oblivious relay once
-they learn the key configuration to use to encrypt messages to the
-oblivious gateway.<a href="#section-3-1" class="pilcrow">¶</a></p>
-<p id="section-3-2">Both the presentation and wire format values for the "oblivious"
-parameter <span class="bcp14">MUST</span> be empty.<a href="#section-3-2" class="pilcrow">¶</a></p>
-<p id="section-3-3">The "oblivious" parameter can be included in the mandatory parameter
+<p id="section-3-1">The "oblivious-gateway" SvcParamKey (<a href="#iana" class="xref">Section 6</a>) is used to indicate that a
+service described in an SVCB record can be accessed as an oblivious target
+using the specified gateway. The service that is queried by the client hosts
+one or more target resources. The gateway is a separate resource that is indicated
+by the SVCB record parameter, which allows oblivious access to any target resource
+hosted by the service described in the SVCB record.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-2">In order to access the service's target resources obliviously, the client
+needs to send encapsulated messages to the gateway resource using the gateway's
+key configuration (which can be retrieved using the method described in
+<a href="#config-fetch" class="xref">Section 4</a>).<a href="#section-3-2" class="pilcrow">¶</a></p>
+<p id="section-3-3">The presentation format of the "oblivious-gateway" parameter is a
+comma-separated list of one or more gateway URIs. URIs <span class="bcp14">MUST</span> be encoded
+as escaped items if they include "," or "", replacing these with "\,"
+and "\", respectively.<a href="#section-3-3" class="pilcrow">¶</a></p>
+<p id="section-3-4">The wire format consists of one or more URIs encoded in UTF-8 <span>[<a href="#RFC3629" class="xref">RFC3629</a>]</span>,
+each prefixed by its length as a single octet, with these length-value pairs
+concatenated to form the SvcParamValue. These pairs <span class="bcp14">MUST</span> exactly fill the
+SvcParamValue; otherwise, the SvcParamValue is malformed.<a href="#section-3-4" class="pilcrow">¶</a></p>
+<p id="section-3-5">The "oblivious-gateway" parameter can be included in the mandatory parameter
 list to ensure that clients that do not support oblivious access
-do not try to use the service. Services that mark oblivious
-support as mandatory can, therefore, indicate that the service might
+do not try to use the service. Services that mark the oblivious-gateway
+parameter as mandatory can, therefore, indicate that the service might
 not be accessible in a non-oblivious fashion. Services that are
 intended to be accessed either with an oblivious gateway or directly
-<span class="bcp14">SHOULD NOT</span> mark the "oblivious" parameter as mandatory. Note that since
+<span class="bcp14">SHOULD NOT</span> mark the "oblivious-gateway" parameter as mandatory. Note that since
 multiple SVCB responses can be provided for a single query, the oblivious
 and non-oblivious versions of a single service can have different SVCB
-records to support different names or properties.<a href="#section-3-3" class="pilcrow">¶</a></p>
-<p id="section-3-4">The scheme to use for oblivious requests made to a service depends on
-the scheme of the SVCB record. This document defines the interpretation for
-the "https" <span>[<a href="#SVCB" class="xref">SVCB</a>]</span> and "dns" <span>[<a href="#DNS-SVCB" class="xref">DNS-SVCB</a>]</span>
+records to support different names or properties.<a href="#section-3-5" class="pilcrow">¶</a></p>
+<p id="section-3-6">The media type to use for encapsulated requests made to a target service
+depends on the scheme of the SVCB record. This document defines the
+interpretation for the "https" <span>[<a href="#SVCB" class="xref">SVCB</a>]</span> and "dns" <span>[<a href="#DNS-SVCB" class="xref">DNS-SVCB</a>]</span>
 schemes. Other schemes that want to use this parameter <span class="bcp14">MUST</span> define the
-interpretation and meaning of the configuration.<a href="#section-3-4" class="pilcrow">¶</a></p>
+interpretation and meaning of the configuration.<a href="#section-3-6" class="pilcrow">¶</a></p>
 <div id="use-in-https-service-records">
 <section id="section-3.1">
         <h3 id="name-use-in-https-service-record">
 <a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-use-in-https-service-record" class="section-name selfRef">Use in HTTPS service records</a>
         </h3>
 <p id="section-3.1-1">For the "https" scheme, which uses the HTTPS RR type instead of SVCB,
-the presence of the "oblivious" parameter means that the service
+the presence of the "oblivious-gateway" parameter means that the target
 being described is an Oblivious HTTP service that uses the default
 "message/bhttp" media type <span>[<a href="#OHTTP" class="xref">OHTTP</a>]</span>
           <span>[<a href="#BINARY-HTTP" class="xref">BINARY-HTTP</a>]</span>.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
@@ -1280,15 +1290,17 @@ being described is an Oblivious HTTP service that uses the default
 an oblivious gateway could look like this:<a href="#section-3.1-2" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-3.1-3">
 <pre>
-svc.example.com. 7200  IN HTTPS 1 . alpn=h2,h2 oblivious
+svc.example.com. 7200  IN HTTPS 1 . (
+     alpn=h2 oblivious-gateway=https://osvc.example.com/gateway )
 </pre><a href="#section-3.1-3" class="pilcrow">¶</a>
 </div>
 <p id="section-3.1-4">A similar record for a service that only support oblivious connectivity
 could look like this:<a href="#section-3.1-4" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-3.1-5">
 <pre>
-oblivious-svc.example.com. 7200  IN HTTPS 1 . (
-    mandatory=oblivious oblivious )
+svc.example.com. 7200  IN HTTPS 1 . (
+    mandatory=oblivious-gateway
+    oblivious-gateway=https://osvc.example.com/gateway )
 </pre><a href="#section-3.1-5" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1299,17 +1311,17 @@ oblivious-svc.example.com. 7200  IN HTTPS 1 . (
 <a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-use-in-dns-server-svcb-reco" class="section-name selfRef">Use in DNS server SVCB records</a>
         </h3>
 <p id="section-3.2-1">For the "dns" scheme, as defined in <span>[<a href="#DNS-SVCB" class="xref">DNS-SVCB</a>]</span>, the presence of
-the "oblivious" parameter means that the DNS server being
+the "oblivious-gateway" parameter means that the DNS server being
 described is an Oblivious DNS over HTTP (DoH) service. The default
 media type expected for use in Oblivious HTTP to DNS resolvers
 is "application/dns-message" <span>[<a href="#DOH" class="xref">DOH</a>]</span>.<a href="#section-3.2-1" class="pilcrow">¶</a></p>
-<p id="section-3.2-2">In order for DNS servers to function as oblivious gateways, they need
-to be accessible via an oblivious relay. Encrypted DNS servers
-used with the discovery mechanisms described in this section can
-either be publicly accessible, or specific to a network. In general,
-only publicly accessible DNS servers will work as Oblivious DNS
-servers, unless there is a coordinated deployment with an oblivious
-proxy that is also hosted within a network.<a href="#section-3.2-2" class="pilcrow">¶</a></p>
+<p id="section-3.2-2">In order for DNS servers to function as oblivious targets, their
+associated gateways need to be accessible via an oblivious relay.
+Encrypted DNS servers used with the discovery mechanisms described
+in this section can either be publicly accessible, or specific to a
+network. In general, only publicly accessible DNS servers will work
+as oblivious DNS servers, unless there is a coordinated deployment
+with an oblivious relay that is also hosted within a network.<a href="#section-3.2-2" class="pilcrow">¶</a></p>
 <div id="ddr">
 <section id="section-3.2.1">
           <h4 id="name-use-with-ddr">
@@ -1323,14 +1335,15 @@ as supporting oblivious resolution using the following record:<a href="#section-
 <div class="alignLeft art-text artwork" id="section-3.2.1-3">
 <pre>
 _dns.resolver.arpa  7200  IN SVCB 1 doh.example.net (
-     alpn=h2 dohpath=/dns-query{?dns} oblivious )
+     alpn=h2 dohpath=/dns-query{?dns}
+     oblivious-gateway=https://odoh.example.net/gateway  )
 </pre><a href="#section-3.2.1-3" class="pilcrow">¶</a>
 </div>
 <p id="section-3.2.1-4">Clients still need to perform some verification of oblivious DNS servers,
 such as the TLS certificate check described in <span>[<a href="#DDR" class="xref">DDR</a>]</span>. This certificate
-check can be done when looking up the configuration on the resolver
-using the well-known URI (<a href="#well-known" class="xref">Section 4</a>), which can either be done
-directly, or via a proxy to avoid exposing client IP addresses.<a href="#section-3.2.1-4" class="pilcrow">¶</a></p>
+check can be done when looking up the configuration on the gateway
+as described in <a href="#config-fetch" class="xref">Section 4</a>, which can either be done directly,
+or via the relay or another proxy to avoid exposing client IP addresses.<a href="#section-3.2.1-4" class="pilcrow">¶</a></p>
 <p id="section-3.2.1-5">Clients also need to ensure that they are not being targeted with unique
 key configurations that would reveal their identity. See <a href="#security" class="xref">Section 5</a> for
 more discussion.<a href="#section-3.2.1-5" class="pilcrow">¶</a></p>
@@ -1355,41 +1368,43 @@ more discussion.<a href="#section-3.2.2-2" class="pilcrow">¶</a></p>
 </div>
 </section>
 </div>
-<div id="well-known">
+<div id="config-fetch">
 <section id="section-4">
-      <h2 id="name-configuration-well-known-ur">
-<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-configuration-well-known-ur" class="section-name selfRef">Configuration Well-Known URI</a>
+      <h2 id="name-key-configuration-fetching">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-key-configuration-fetching" class="section-name selfRef">Key Configuration Fetching</a>
       </h2>
-<p id="section-4-1">Clients that know a service is available as an oblivious gateway, e.g.,
-either via discovery through the "oblivious" parameter in a SVCB or HTTPS
-record, or by configuration, need to know the key configuration before sending
+<p id="section-4-1">Clients that know a service is available as an oblivious target
+via discovery through the "oblivious-gateway" parameter in a SVCB or HTTPS
+record need to know the key configuration of the gateway before sending
 oblivious requests.<a href="#section-4-1" class="pilcrow">¶</a></p>
-<p id="section-4-2">This document defines a well-known URI <span>[<a href="#RFC8615" class="xref">RFC8615</a>]</span>, "oblivious-configs",
-that allows a gateway to host its configurations.<a href="#section-4-2" class="pilcrow">¶</a></p>
-<p id="section-4-3">The URI is constructed using the TargetName in the associated ServiceMode
-SVCB record.<a href="#section-4-3" class="pilcrow">¶</a></p>
-<p id="section-4-4">For example, the URI for the following record:<a href="#section-4-4" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-4-5">
+<p id="section-4-2">In order to fetch the key configuration of an oblivious gateway discovered
+in this manner, the client issues a GET request to the URI of the gateway
+specifying the "application/ohttp-keys" (<span>[<a href="#OHTTP" class="xref">OHTTP</a>]</span>) media type in the Accept
+header.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<p id="section-4-3">For example, if the client receives the following record:<a href="#section-4-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4-4">
 <pre>
-svc.example.com. 7200  IN HTTPS 1 . alpn=h2,h2 oblivious
-</pre><a href="#section-4-5" class="pilcrow">¶</a>
+svc.example.com. 7200  IN HTTPS 1 . (
+     alpn=h2 oblivious-gateway=https://osvc.example.com/gateway )
+</pre><a href="#section-4-4" class="pilcrow">¶</a>
 </div>
-<p id="section-4-6">would be "https://svc.example.com/.well-known/oblivious-configs".<a href="#section-4-6" class="pilcrow">¶</a></p>
-<p id="section-4-7">As another example, the URI for the following record:<a href="#section-4-7" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-4-8">
+<p id="section-4-5">It could fetch the key configuration with the following request:<a href="#section-4-5" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4-6">
 <pre>
-_dns.resolver.arpa  7200  IN SVCB 1 doh.example.net (
-     alpn=h2 dohpath=/dns-query{?dns} oblivious )
-</pre><a href="#section-4-8" class="pilcrow">¶</a>
+GET /gateway HTTP/1.1
+Host: osvc.example.com
+Accept: application/ohttp-keys
+</pre><a href="#section-4-6" class="pilcrow">¶</a>
 </div>
-<p id="section-4-9">would be "https://doh.example.net/.well-known/oblivious-configs".<a href="#section-4-9" class="pilcrow">¶</a></p>
-<p id="section-4-10">The content of this resource is expected to be "application/ohttp-keys",
-as defined in <span>[<a href="#OHTTP" class="xref">OHTTP</a>]</span>.<a href="#section-4-10" class="pilcrow">¶</a></p>
-<p id="section-4-11">Before being able to use a server as an oblivious gatweay, clients need
-to use this URI to fetch the configuration. They can either fetch it
-directly, or do so via a proxy in order to avoid the server discovering
-information about the client's identity. See <a href="#security" class="xref">Section 5</a> for more
-discussion of avoiding key targeting attacks.<a href="#section-4-11" class="pilcrow">¶</a></p>
+<p id="section-4-7">Oblivious gateways that coordinate with targets that advertise oblivious
+support <span class="bcp14">SHOULD</span> support GET requests for their key configuration in this
+manner, unless there is another out-of-band configuration model that is
+usable by clients. Gateways respond with their key configuration in the
+response body, with a content type of "application/ohttp-keys".<a href="#section-4-7" class="pilcrow">¶</a></p>
+<p id="section-4-8">Clients can either fetch this key configuration directly, or do so via
+a proxy in order to avoid the server discovering information about the
+client's identity. See <a href="#security" class="xref">Section 5</a> for more discussion of avoiding key
+targeting attacks.<a href="#section-4-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="security">
@@ -1419,7 +1434,7 @@ of the options for ensuring the key configurations are consistent between
 different clients. Clients <span class="bcp14">SHOULD</span> employ some technique to mitigate key
 targeting attack. Oblivious gateways that are detected to use targeted
 key configurations per-client <span class="bcp14">MUST NOT</span> be used.<a href="#section-5-4" class="pilcrow">¶</a></p>
-<p id="section-5-5">When clients fetch a gateway's configuration using the well-known URI,
+<p id="section-5-5">When clients fetch a gateway's configuration (<a href="#config-fetch" class="xref">Section 4</a>),
 they can expose their identity in the form of an IP address if they do not
 connect via a proxy or some other IP-hiding mechanism. In some circumstances,
 this might not be a privacy concern, since revealing that a particular
@@ -1457,25 +1472,12 @@ registry (<span>[<a href="#SVCB" class="xref">SVCB</a>]</span>).<a href="#sectio
           <tbody>
             <tr>
               <td class="text-left" rowspan="1" colspan="1">TBD</td>
-              <td class="text-left" rowspan="1" colspan="1">oblivious</td>
-              <td class="text-left" rowspan="1" colspan="1">Describes if a service operates an oblivious HTTP gateway</td>
+              <td class="text-left" rowspan="1" colspan="1">oblivious-gateway</td>
+              <td class="text-left" rowspan="1" colspan="1">Defines an oblivious HTTP gateway to use to access this resource</td>
               <td class="text-left" rowspan="1" colspan="1">(This document)</td>
             </tr>
           </tbody>
         </table>
-</section>
-</div>
-<div id="well-known-uri">
-<section id="section-6.2">
-        <h3 id="name-well-known-uri">
-<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-well-known-uri" class="section-name selfRef">Well-Known URI</a>
-        </h3>
-<p id="section-6.2-1">IANA is requested to add a new entry in the "Well-Known URIs" registry <span>[<a href="#RFC8615" class="xref">RFC8615</a>]</span> with the following information:<a href="#section-6.2-1" class="pilcrow">¶</a></p>
-<p id="section-6.2-2">URI suffix: oblivious-configs<a href="#section-6.2-2" class="pilcrow">¶</a></p>
-<p id="section-6.2-3">Change controller: IETF<a href="#section-6.2-3" class="pilcrow">¶</a></p>
-<p id="section-6.2-4">Specification document: This document<a href="#section-6.2-4" class="pilcrow">¶</a></p>
-<p id="section-6.2-5">Status: permanent<a href="#section-6.2-5" class="pilcrow">¶</a></p>
-<p id="section-6.2-6">Related information: N/A<a href="#section-6.2-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1517,13 +1519,13 @@ registry (<span>[<a href="#SVCB" class="xref">SVCB</a>]</span>).<a href="#sectio
         <dd>
 <span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
 <dd class="break"></dd>
+<dt id="RFC3629">[RFC3629]</dt>
+        <dd>
+<span class="refAuthor">Yergeau, F.</span>, <span class="refTitle">"UTF-8, a transformation format of ISO 10646"</span>, <span class="seriesInfo">STD 63</span>, <span class="seriesInfo">RFC 3629</span>, <span class="seriesInfo">DOI 10.17487/RFC3629</span>, <time datetime="2003-11" class="refDate">November 2003</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3629">https://www.rfc-editor.org/rfc/rfc3629</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="RFC8174">[RFC8174]</dt>
         <dd>
 <span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC8615">[RFC8615]</dt>
-        <dd>
-<span class="refAuthor">Nottingham, M.</span>, <span class="refTitle">"Well-Known Uniform Resource Identifiers (URIs)"</span>, <span class="seriesInfo">RFC 8615</span>, <span class="seriesInfo">DOI 10.17487/RFC8615</span>, <time datetime="2019-05" class="refDate">May 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8615">https://www.rfc-editor.org/rfc/rfc8615</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="SVCB">[SVCB]</dt>
       <dd>
