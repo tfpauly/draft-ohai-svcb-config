@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-06-02T00:09:59.804910+00:00",
+  "timestamp": "2022-07-05T00:08:06.290351+00:00",
   "repo": "tfpauly/draft-ohai-svcb-config",
   "labels": [
     {
@@ -332,14 +332,29 @@
       "url": "https://github.com/tfpauly/draft-ohai-svcb-config/issues/17",
       "state": "OPEN",
       "author": "martinthomson",
-      "authorAssociation": "NONE",
+      "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
       "labels": [],
       "body": "The document talks about discovering *targets*, or oblivious target resources. It also specifies a location for a key configuration.\r\n\r\nThe key configuration is a property of the oblivious ***request*** resource.  As the configuration provides information about oblivious target resources, this is not a good fit.\r\n\r\nAlso, as a single oblivious request resource is able to serve a large number of target resources, I would instead suggest that a link relation - a more appropriate a method of providing any sort of configuration for a single resource - is also better suited to this application.\r\n\r\n`.well-known` provides information about entire servers.  Origin-wide configuration, where there might be multiple oblivious request resources on the same server, is inflexible.\r\n\r\nIf the goal is to facilitate discovery without specifying paths, then putting the path of the oblivious request resource into the SVCB (HTTPS really) configuration might work.  Or, if you don't like your configuration too explicit, a well-known location for an oblivious request resource that is able to forward oblivious requests to any oblivious target resource on the same origin might also work.",
       "createdAt": "2022-05-27T05:17:32Z",
-      "updatedAt": "2022-05-27T05:17:32Z",
+      "updatedAt": "2022-07-04T22:17:07Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "tfpauly",
+          "authorAssociation": "OWNER",
+          "body": "As terminology has improved, the document now is clear that this is about identifying an oblivious gateway resource and its configuration.\r\n\r\nI don't think a link relation, directly, would make sense for this discovery mode (since you'd need to get the relation from some original request with a link header), but there may be a good analogy we can create in the SVCB parameters -- adding more info to let the gateway be separate from the target, and being explicit about that.",
+          "createdAt": "2022-07-04T20:57:24Z",
+          "updatedAt": "2022-07-04T20:57:24Z"
+        },
+        {
+          "author": "tfpauly",
+          "authorAssociation": "OWNER",
+          "body": "@martinthomson I'd be curious to hear your thoughts on the direction we could take with #21.",
+          "createdAt": "2022-07-04T22:17:06Z",
+          "updatedAt": "2022-07-04T22:17:06Z"
+        }
+      ]
     },
     {
       "number": 18,
@@ -1167,20 +1182,90 @@
       "id": "PR_kwDOG3oZ-844j2Y1",
       "title": "Editorial fixes",
       "url": "https://github.com/tfpauly/draft-ohai-svcb-config/pull/15",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "martinthomson",
-      "authorAssociation": "NONE",
+      "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2022-05-27T04:31:56Z",
-      "updatedAt": "2022-05-27T05:19:48Z",
+      "updatedAt": "2022-07-04T23:57:13Z",
       "baseRepository": "tfpauly/draft-ohai-svcb-config",
       "baseRefName": "main",
       "baseRefOid": "8cfed20962c81d7601d68b6958b6e825d0dced39",
       "headRepository": "martinthomson/ohai-svcb-config",
       "headRefName": "editorial",
       "headRefOid": "866d1db2bec453a607718dd7a375a508986c3350",
+      "closedAt": "2022-07-04T20:30:12Z",
+      "mergedAt": "2022-07-04T20:30:12Z",
+      "mergedBy": "tfpauly",
+      "mergeCommit": {
+        "oid": "584cca423db3a2809182a93f1f399c31a6a83a5c"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOG3oZ-849RE7G",
+          "commit": {
+            "abbreviatedOid": "866d1db"
+          },
+          "author": "tfpauly",
+          "authorAssociation": "OWNER",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2022-07-04T20:30:08Z",
+          "updatedAt": "2022-07-04T20:30:08Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 20,
+      "id": "PR_kwDOG3oZ-8460YOw",
+      "title": "Soften language about IP obfuscation",
+      "url": "https://github.com/tfpauly/draft-ohai-svcb-config/pull/20",
+      "state": "OPEN",
+      "author": "tfpauly",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #18 ",
+      "createdAt": "2022-07-04T20:47:46Z",
+      "updatedAt": "2022-07-04T20:51:00Z",
+      "baseRepository": "tfpauly/draft-ohai-svcb-config",
+      "baseRefName": "main",
+      "baseRefOid": "893f521abea929ba6a16dc8fdae30d7391de168a",
+      "headRepository": "tfpauly/draft-ohai-svcb-config",
+      "headRefName": "tfpauly-patch-4",
+      "headRefOid": "e2bedc377be475ef5c308bb942d1cc942ed4b268",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 21,
+      "id": "PR_kwDOG3oZ-8460hUO",
+      "title": "Make SVCB parameter \"oblivious-gateway\"",
+      "url": "https://github.com/tfpauly/draft-ohai-svcb-config/pull/21",
+      "state": "OPEN",
+      "author": "tfpauly",
+      "authorAssociation": "OWNER",
+      "assignees": [
+        "tfpauly"
+      ],
+      "labels": [],
+      "body": "Closes #16\r\nCloses #17\r\n\r\nThis is a reconstruction of the discovery that changes from a boolean, to a name of the oblivious gateway.\r\n\r\nThe theory here is that if you're looking up records for a target you're trying to talk to, and looking up HTTPS records (for normal HTTP resources) or SVCB records (for DoH servers), you can get a parameter back indicating that there's an oblivious gateway that is designed specifically to work with this target. This parameter contains the name of the oblivious gateway server.\r\n\r\nOf course, the oblivious gateway _can_ be co-located with the target resource, but they don't need to be. This was a bug in the previous approach to not allow them to be different.\r\n\r\nOnce you know this, you still need to know (a) the configuration to use on the client to create the request and (b) the oblivious gateway resource's full URI / path.\r\n\r\nThe current text uses a well-known for both. I know we don't want to overuse well-known, so we may certainly want to back away from this. However, this does simplify things greatly for client-targeting attacks by making the gateway commit to having one discoverable gateway resource and associated key config set.\r\n\r\nAnother approach would be for the parameter in the SVCB record to include the name and the path (the full URI, essentially) of the gateway resource. The trick then would be to have a deterministic way to look up the key config based on that. It also makes it easier to spin up a unique gateway resource per-client, so you need more targeting mitigation.",
+      "createdAt": "2022-07-04T22:16:35Z",
+      "updatedAt": "2022-07-04T22:16:35Z",
+      "baseRepository": "tfpauly/draft-ohai-svcb-config",
+      "baseRefName": "main",
+      "baseRefOid": "893f521abea929ba6a16dc8fdae30d7391de168a",
+      "headRepository": "tfpauly/draft-ohai-svcb-config",
+      "headRefName": "gateway-param",
+      "headRefOid": "dde7103131484bbd4ef9725c738d7aa528a81774",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
