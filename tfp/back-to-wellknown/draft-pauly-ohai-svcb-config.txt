@@ -106,7 +106,7 @@ Table of Contents
    their assoicated gateways more dynamically.  For example, a network
    may want to advertise a DNS resolver that is accessible over
    Oblivious HTTP and applies local network resolution policies via
-   mechanisms like Discovery of Designated Resolvers ([DDR].  Clients
+   mechanisms like Discovery of Designated Resolvers ([DDR]).  Clients
    can work with trusted relays to access these gateways.
 
    This document defines a mechanism to advertise that an HTTP service
