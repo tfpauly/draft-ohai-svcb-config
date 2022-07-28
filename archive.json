@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-07-07T00:10:04.200854+00:00",
+  "timestamp": "2022-07-28T00:09:46.220033+00:00",
   "repo": "tfpauly/draft-ohai-svcb-config",
   "labels": [
     {
@@ -492,6 +492,30 @@
           "body": "Good points. If the client does not support DNSSEC, it has to have a authenticated encrypted connection to the recursive resolver and the resolver has to do DNSSEC validation (signaling to the client that it has done DNSSEC validation using AD bit). \r\n\r\nAs per https://datatracker.ietf.org/doc/html/rfc5625#section-4.3, resolvers must handle Resource Records (RRs) of unknown type transparently. Resolvers shouldn't be modifying the SVCB RR type. \r\n",
           "createdAt": "2022-05-27T07:10:33Z",
           "updatedAt": "2022-05-27T07:10:33Z"
+        }
+      ]
+    },
+    {
+      "number": 23,
+      "id": "I_kwDOG3oZ-85OmHLG",
+      "title": "Ensure that the gateway is trusted for the target",
+      "url": "https://github.com/tfpauly/draft-ohai-svcb-config/issues/23",
+      "state": "CLOSED",
+      "author": "tfpauly",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "We need to ensure that an attacker can't put an illegitimate gateway in for a service.\r\n\r\nThis likely has the form that:\r\n- The target and gateway need to be colocated / share the same TLS certificate\r\n- The config/gateway likely needs to be well-known",
+      "createdAt": "2022-07-26T18:31:33Z",
+      "updatedAt": "2022-07-27T15:18:09Z",
+      "closedAt": "2022-07-27T15:18:09Z",
+      "comments": [
+        {
+          "author": "tfpauly",
+          "authorAssociation": "OWNER",
+          "body": "I think the goals are:\r\n\r\n- Solution must link the target and gateway\r\n    - Same hostname is OK, so you know that the certificate is covered\r\n    - It's possible that SVCB points to different sets of addresses that support non-OHTTP target instances from OHTTP gateway+target instances. To support such cases, the relay likely SHOULD do the same SVCB query to find the gateway instance.\r\n- Must not be able to split off separate paths that are controllable by someone else behind the server\r\n    - Control over well-known for at least the config is needed",
+          "createdAt": "2022-07-26T20:04:30Z",
+          "updatedAt": "2022-07-26T20:04:30Z"
         }
       ]
     }
@@ -1639,6 +1663,36 @@
       "mergedBy": "tfpauly",
       "mergeCommit": {
         "oid": "191d4f7377d18927b646f1b907b41a8094670c10"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 24,
+      "id": "PR_kwDOG3oZ-848MD_p",
+      "title": "Bind the gateway to the target",
+      "url": "https://github.com/tfpauly/draft-ohai-svcb-config/pull/24",
+      "state": "MERGED",
+      "author": "tfpauly",
+      "authorAssociation": "OWNER",
+      "assignees": [
+        "tfpauly"
+      ],
+      "labels": [],
+      "body": "Closes #23\r\n\r\n- Move the SVCB parameter back to a boolean\r\n- Define a well-known off of the target for the gateway location, which can redirect to a more specific URI\r\n- Still fetch the config from the gateway itself",
+      "createdAt": "2022-07-27T15:11:52Z",
+      "updatedAt": "2022-07-27T15:18:09Z",
+      "baseRepository": "tfpauly/draft-ohai-svcb-config",
+      "baseRefName": "main",
+      "baseRefOid": "191d4f7377d18927b646f1b907b41a8094670c10",
+      "headRepository": "tfpauly/draft-ohai-svcb-config",
+      "headRefName": "tfp/back-to-wellknown",
+      "headRefOid": "a23222ab392dfa7e5b4321e38a57823a3159ebb2",
+      "closedAt": "2022-07-27T15:18:09Z",
+      "mergedAt": "2022-07-27T15:18:09Z",
+      "mergedBy": "tfpauly",
+      "mergeCommit": {
+        "oid": "cc86aac0d7fe2b8fbf7ce9355e78b561a5b1bf8d"
       },
       "comments": [],
       "reviews": []
