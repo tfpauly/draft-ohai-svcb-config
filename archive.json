@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-07-28T00:09:46.220033+00:00",
+  "timestamp": "2022-07-31T00:10:00.332741+00:00",
   "repo": "tfpauly/draft-ohai-svcb-config",
   "labels": [
     {
@@ -516,6 +516,75 @@
           "body": "I think the goals are:\r\n\r\n- Solution must link the target and gateway\r\n    - Same hostname is OK, so you know that the certificate is covered\r\n    - It's possible that SVCB points to different sets of addresses that support non-OHTTP target instances from OHTTP gateway+target instances. To support such cases, the relay likely SHOULD do the same SVCB query to find the gateway instance.\r\n- Must not be able to split off separate paths that are controllable by someone else behind the server\r\n    - Control over well-known for at least the config is needed",
           "createdAt": "2022-07-26T20:04:30Z",
           "updatedAt": "2022-07-26T20:04:30Z"
+        }
+      ]
+    },
+    {
+      "number": 25,
+      "id": "I_kwDOG3oZ-85Oufr7",
+      "title": "Informational status",
+      "url": "https://github.com/tfpauly/draft-ohai-svcb-config/issues/25",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Any specific reason for using Informational status for the draft ?                                ",
+      "createdAt": "2022-07-28T11:47:11Z",
+      "updatedAt": "2022-07-28T14:10:56Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "tfpauly",
+          "authorAssociation": "OWNER",
+          "body": "Nope, it should be proposed standard!",
+          "createdAt": "2022-07-28T14:10:56Z",
+          "updatedAt": "2022-07-28T14:10:56Z"
+        }
+      ]
+    },
+    {
+      "number": 26,
+      "id": "I_kwDOG3oZ-85Ouqne",
+      "title": "Unique DoH path attack",
+      "url": "https://github.com/tfpauly/draft-ohai-svcb-config/issues/26",
+      "state": "OPEN",
+      "author": "tireddy2",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Some options include: only allow common DoH paths (such as the de-facto default \"/dns-query{?dns}\");\r\nperforming consistency checks by fetching the information about the resolver over multiple resolution paths; or coordinating with a\r\ntrusted oblivious relay to validate that DoH paths are common across clients using the same gateway.\r\n\r\nComment> The consistency check discussed above in security considerations section is not clear to me. For example, in case of DNR, the client will use DHCP/RA to learn the DoH path and it can use discovered ADN or Do53 to do the the SVCB lookup to cross-check both DoH paths are matching. \r\n\r\nI don't get how the client will co-ordinate with a oblivious relay to validate that DoH path. Is the client supposed to use the de-facto URI path to retrieve the actual URI path from the Oblivious DoH service.  ",
+      "createdAt": "2022-07-28T12:26:16Z",
+      "updatedAt": "2022-07-28T15:06:10Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "tfpauly",
+          "authorAssociation": "OWNER",
+          "body": "I was thinking that either you would:\r\n- Check that the path in the SVCB response is the same if you look it up locally and publicly (two resolvers)\r\n- Have some proprietary method to reveal what the interior DoH path is to the relay, and the relay can reject requests to paths that look like targeting.",
+          "createdAt": "2022-07-28T14:13:49Z",
+          "updatedAt": "2022-07-28T14:13:49Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I like the first approach compared to the proprietary method :)",
+          "createdAt": "2022-07-28T14:33:38Z",
+          "updatedAt": "2022-07-28T14:33:38Z"
+        },
+        {
+          "author": "tireddy2",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I see draft-schwartz-ohai-consistency-doublecheck solves the problem by including the DoH path in the service description host. ",
+          "createdAt": "2022-07-28T14:57:46Z",
+          "updatedAt": "2022-07-28T14:57:46Z"
+        },
+        {
+          "author": "tfpauly",
+          "authorAssociation": "OWNER",
+          "body": "Yeah, that works if you have some such dictionary file. ",
+          "createdAt": "2022-07-28T15:06:10Z",
+          "updatedAt": "2022-07-28T15:06:10Z"
         }
       ]
     }
@@ -1694,6 +1763,32 @@
       "mergeCommit": {
         "oid": "cc86aac0d7fe2b8fbf7ce9355e78b561a5b1bf8d"
       },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 27,
+      "id": "PR_kwDOG3oZ-848QNbo",
+      "title": "Information -> proposed standard",
+      "url": "https://github.com/tfpauly/draft-ohai-svcb-config/pull/27",
+      "state": "OPEN",
+      "author": "tfpauly",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #25 ",
+      "createdAt": "2022-07-28T14:11:39Z",
+      "updatedAt": "2022-07-28T14:11:39Z",
+      "baseRepository": "tfpauly/draft-ohai-svcb-config",
+      "baseRefName": "main",
+      "baseRefOid": "9d692dcd761433091acef9e0931c8090b50323a8",
+      "headRepository": "tfpauly/draft-ohai-svcb-config",
+      "headRefName": "tfpauly-patch-6",
+      "headRefOid": "59de53531f9a3b46e97bc3f3f844b683c80042f8",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
       "comments": [],
       "reviews": []
     }
